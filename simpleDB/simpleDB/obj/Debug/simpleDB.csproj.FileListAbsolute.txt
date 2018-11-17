@@ -1,0 +1,7 @@
+c:\users\hig\documents\visual studio 2013\Projects\simpleDB\simpleDB\bin\Debug\simpleDB.dll
+c:\users\hig\documents\visual studio 2013\Projects\simpleDB\simpleDB\bin\Debug\simpleDB.pdb
+c:\users\hig\documents\visual studio 2013\Projects\simpleDB\simpleDB\obj\Debug\simpleDB.dll
+c:\users\hig\documents\visual studio 2013\Projects\simpleDB\simpleDB\obj\Debug\simpleDB.pdb
+c:\users\hig\documents\visual studio 2013\Projects\simpleDB\simpleDB\bin\Debug\simpleDB.dll.config
+c:\users\hig\documents\visual studio 2013\Projects\simpleDB\simpleDB\bin\Debug\MySql.Data.dll
+C:\Users\hig\Documents\Visual Studio 2013\Projects\simpleDB\simpleDB\obj\Debug\simpleDB.csprojResolveAssemblyReference.cache
