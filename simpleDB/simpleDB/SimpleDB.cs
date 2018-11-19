@@ -270,6 +270,114 @@ namespace SimpleDB
             return Results;
         }
 
+        public static MyDictionary<string, string> save(DbContext context, string table)
+        {
+            var d = new DbContext(context.ConnectionString);
+            d.SQL = "DESC " + table;
+            var results = whileQuery(d);
+
+            string placeHolders = "";
+            string primaryKey = "";
+            string primaryValue = "";
+            string primary = "";
+            string update = "";
+            bool hasPrimary = false;
+
+            List<string> keys = new List<string>();
+            List<string> values = new List<string>();
+
+            foreach ( var item in results )
+            {
+                if(item["Key"].Equals("PRI"))
+                {
+                    primaryKey = item["Field"];
+                    primaryValue = context.Params[item["Field"]];
+                    primary = " "+ primaryKey + "='" + primaryValue + "' AND";
+
+                    if (!primaryValue.Equals(""))
+                    {
+                        hasPrimary = true;
+                    }
+                }
+
+                if (!context.Params.ContainsKey(item["Field"]))
+                {
+                    continue;
+                }
+                if(item["Type"].Equals("date") || item["Type"].Equals("timestamp"))
+                {
+                    continue;
+                }
+
+                if( (item["Type"].Equals("date") || (item["Type"].Equals("timesamp")) && !context.Params.ContainsKey(item["Field"]) ))
+                {
+                    context.Params.Add( item["Field"], "now()");
+                    placeHolders += "now(),";
+                    update = item["Field"] + "= now(),";
+                }
+                else if((item["Type"].Equals("date") || (item["Type"].Equals("timesamp")) && item["Field"].ToLower().Equals("now")) )
+                {
+                    context.Params.Add(item["Field"], "now()");
+                    placeHolders += "now(),";
+                    update = item["Field"] + "= now(),";
+                }
+                else if(item["Type"].Equals("created") && !context.Params.ContainsKey(item["Field"]))
+                {
+                    context.Params.Add(item["Field"], "now()");
+                    placeHolders += "now(),";
+                    update = item["Field"] + "= now(),";
+                }
+                else
+                {
+                        placeHolders += "?,";
+                        update += " " + item["Field"] + " = ?,";
+                }
+
+                keys.Add(item["Field"]);
+                
+                if( !context.Params[item["Field"]].Equals("now()") )
+                {
+                    values.Add(context.Params[item["Field"]]);
+                }
+
+            }
+
+            update = update.TrimEnd(',');
+            placeHolders = placeHolders.TrimEnd(',');
+            primary = Regex.Replace(primary, @"AND$", "");
+
+            bool recordExists = false;
+
+            if( hasPrimary)
+            {
+                var d2 = new DbContext(context.ConnectionString);
+                d2.SQL = "SELECT * FROM " + table + " WHERE " + primary;
+                var record = MySqlDatabase.query(d2);
+
+                if (record.Count > 0)
+                {
+                    recordExists = true;
+                }
+            }
+
+            string query = "";
+
+            if ( !primaryKey.Equals("") && !primaryValue.Equals("") && recordExists)
+            {
+                query = " UPDATE " + table + " SET " + update + " WHERE " + primary;
+            }
+            else
+            {
+                string keyList = string.Join(",", keys.ToArray());
+                query = "INSERT INTO " + table + "(" + keyList + ") VALUES(" + placeHolders + ")";
+            }
+
+            var d3 = new DbContext(context.ConnectionString);
+            d3.SQL = query;
+            d3.Params = context.Params;
+            
+            return MySqlDatabase.query( d3);
+        }
 
         public SearchResults getSearchResults(DbContext context, SearchResults sr)
         {
